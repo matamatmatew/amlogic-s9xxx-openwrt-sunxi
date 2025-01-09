@@ -1,0 +1,14 @@
+proxies:
+  - name: name
+    server: server
+    port: 443
+    type: trojan
+    password: password
+    skip-cert-verify: true
+    sni: sni
+    network: ws
+    ws-opts:
+      path: /trojan
+      headers:
+        Host: Host
+    udp: true

@@ -1,0 +1,3 @@
+#!/bin/sh
+sudo ./remake -b orangepizero3 -k 6.1.31 -u flippy -r matamatmatew/kernel -a false -s 128/768
+exit 0

@@ -1,0 +1,258 @@
+#!/bin/sh
+
+exec > /root/setup.log 2>&1
+# dont remove!
+echo "Installed Time: $(date '+%A, %d %B %Y %T')"
+
+# Set Firmware Version 
+echo "Set Firmware Version"
+FIRMWARE='/www/luci-static/resources/view/status/include/10_system.js'
+if grep -q "_('Firmware Version'), (L.isObject(boardinfo.release) ? boardinfo.release.description + ' / ' : '') + (luciversion || '')," $FIRMWARE ; then
+	sed -i "s#_('Firmware Version'), (L.isObject(boardinfo.release) ? boardinfo.release.description + ' / ' : '') + (luciversion || ''),#_('Firmware Version'), (L.isObject(boardinfo.release) ? boardinfo.release.description + ' | amat Builder ' : ''),#g" $FIRMWARE
+elif grep -q "_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||'')," $FIRMWARE ; then
+	sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' | amat Builder':''),#g" $FIRMWARE
+fi
+
+if grep -q 'ImmortalWrt' /etc/openwrt_release ; then
+  sed -i "s/\(DISTRIB_DESCRIPTION='ImmortalWrt [0-9]*\.[0-9]*.[0-9a-zA-Z]*\).*'/\1'/g" /etc/openwrt_release
+  echo Branch version: "$(grep 'DISTRIB_DESCRIPTION=' /etc/openwrt_release | awk -F"'" '{print $2}')"
+elif grep -q "OpenWrt" /etc/openwrt_release ; then
+  sed -i "s/\(DISTRIB_DESCRIPTION='OpenWrt [0-9]*\.[0-9]*.[0-9a-zA-Z]*\).*'/\1'/g" /etc/openwrt_release
+  echo Branch version: "$(grep 'DISTRIB_DESCRIPTION=' /etc/openwrt_release | awk -F"'" '{print $2}')"
+fi
+
+# Set login root password
+(echo "root"; sleep 1; echo "root") | passwd > /dev/null
+
+# Set Bahasa dan Tema
+uci -q set luci.main.lang='auto'
+uci -q set luci.main.mediaurlbase=/luci-static/argon
+uci commit luci
+
+# configure interface
+chmod +x /usr/lib/ModemManager/connection.d/*
+echo "Setup WAN and LAN Interface"
+uci -q set network.lan.ipaddr="192.168.1.1"
+uci -q set network.lan.ip6assign='64'
+uci -q set network.wan=interface 
+uci -q set network.wan.proto='xmm'
+uci -q set network.wan.device='/dev/ttyACM2'
+uci -q set network.wan.apn='Home'
+uci -q set network.wan.auth='none'
+uci -q set network.wan.pdp='ipv4v6'
+uci -q set network.wan.ip6assign='64'
+uci -q del network.wan6
+uci -q set network.wwan=interface 
+uci -q set network.wwan.proto='modemmanager'
+uci -q set network.wwan.device='/sys/devices/platform/soc/5310000.usb/usb2/2-1'
+uci -q set network.wwan.apn='Home'
+uci -q set network.wwan.auth='both'
+uci -q set network.wwan.iptype='ipv4v6'
+uci -q set network.wwan.loglevel='ERR'
+uci -q set network.wwan.signalrate='5'
+uci -q set network.wwan.ip6assign='64'
+uci -q del network.wwan6
+uci -q set network.tethering=interface
+uci -q set network.tethering.proto='dhcp'
+uci -q set network.tethering.device='usb0'
+uci commit network
+
+uci -q set firewall.@zone[1].network='wan wwan tethering'
+# Intercept DNS traffic
+echo "Add Port Firewall AdGuardHome DNS 53 redirect"
+uci -q del firewall.adguardhome
+uci -q set firewall.adguardhome='redirect'
+uci -q set firewall.adguardhome.name='AdGuardHome'
+uci -q set firewall.adguardhome.target='DNAT'
+uci -q set firewall.adguardhome.proto='tcp udp'
+uci -q set firewall.adguardhome.src='lan'
+uci -q set firewall.adguardhome.src_dport='53'
+uci -q set firewall.adguardhome.enabled='1'
+uci -q set firewall.adguardhome.dest_port='1745'
+uci commit firewall
+
+# custom repo and Disable opkg signature check
+echo "Add custom Repo By kiddin9"
+#sed -i 's/option check_signature/# option check_signature/g' /etc/opkg.conf
+echo "#src/gz custom_arch https://dl.openwrt.ai/latest/packages/aarch64_generic/kiddin9" >> /etc/opkg/customfeeds.conf
+
+
+# kB
+memtotal=`grep MemTotal /proc/meminfo | awk '{print $2}'`
+if [ "$memtotal" -ge 1048576 ]; then
+	# > 1024M
+	cachesize=10000
+	dnsforwardmax=10000
+	nf_conntrack_max=262144
+elif [ "$memtotal" -ge 524288 ]; then
+	# <= 1024M
+	cachesize=10000
+	dnsforwardmax=10000
+	nf_conntrack_max=131072
+elif [ "$memtotal" -ge 262144 ]; then
+	# <= 512M
+	cachesize=8192
+	dnsforwardmax=8192
+	nf_conntrack_max=65536
+elif [ "$memtotal" -ge 131072 ]; then
+	# <= 256M
+	cachesize=4096
+	dnsforwardmax=4096
+	nf_conntrack_max=65536
+elif [ "$memtotal" -ge 65536 ]; then
+	# <= 128M
+	cachesize=2048
+	dnsforwardmax=2048
+	nf_conntrack_max=32768
+else
+	# < 64M
+	cachesize=1024
+	dnsforwardmax=1024
+	nf_conntrack_max=16384
+fi
+
+# Setup dhcp dnsmasq
+echo "Setup Config Dnsmasq"
+uci -q get dhcp.@dnsmasq[0] || uci -q add dhcp dnsmasq
+uci -q set dhcp.@dnsmasq[0].cachesize="$cachesize"
+uci -q set dhcp.@dnsmasq[0].dnsforwardmax="$dnsforwardmax"
+uci -q set dhcp.@dnsmasq[0].localservice='0'
+uci -q set dhcp.@dnsmasq[0].localise_queries='1'
+uci -q set dhcp.@dnsmasq[0].rebind_protection='0'
+uci -q set dhcp.@dnsmasq[0].rebind_localhost='1'
+uci -q set dhcp.@dnsmasq[0].noresolv='0'
+uci -q set dhcp.@dnsmasq[0].cachesize='1500'
+uci -q set dhcp.@dnsmasq[0].min_ttl='3600'
+uci -q set dhcp.@dnsmasq[0].port='53'
+uci -q add_list dhcp.@dnsmasq[0].server='127.0.0.1#1745'
+# Remove ipv6
+#echo "Delete ipv6"
+#uci -q del dhcp.lan.dhcpv6
+#uci -q del dhcp.lan.ra
+#uci -q del dhcp.lan.ndp
+#uci -q del dhcp.lan.ra_slaac
+#uci -q del dhcp.lan.ra_flags
+#uci -q del dhcp.lan.force='1'
+#uci -q del dhcp.wan
+uci commit dhcp
+
+echo "Setup Config system"
+uci -q set system.@system[0].zram_comp_algo='zstd'
+uci -q set system.@system[0].zram_size_mb="$(expr $memtotal / 1024 / 3)"
+# Set hostname and Timezone to Asia/Jakarta
+uci -q set system.@system[0].hostname='OpenWrt'
+uci -q set system.@system[0].zonename='Asia/Jakarta'
+uci -q set system.@system[0].timezone='WIB-7'
+uci -q set system.@system[0].conloglevel='4'
+uci -q set system.@system[0].cronloglevel='8'
+uci -q set system.@system[0].ttylogin='1'
+uci -q del system.ntp.server
+uci -q add_list system.ntp.server='0.pool.ntp.org'
+uci -q add_list system.ntp.server='0.id.pool.ntp.org'
+uci -q add_list system.ntp.server='0.asia.pool.ntp.org'
+uci commit system
+
+# sysctl overwrite
+echo "Setup sysctl file"
+SYSCTL_LOCAL=/etc/sysctl.d/50-local.conf
+mkdir -p /etc/sysctl.d
+echo -n >$SYSCTL_LOCAL
+echo net.nf_conntrack_max=$nf_conntrack_max >>$SYSCTL_LOCAL
+echo net.core.rmem_max=$nf_conntrack_max >>$SYSCTL_LOCAL
+echo net.core.wmem_max=$nf_conntrack_max >>$SYSCTL_LOCAL
+
+# remove login password required when accessing terminal
+uci -q set ttyd.@ttyd[0].command='/bin/bash --login'
+uci commit ttyd
+
+# remove huawei me909s usb-modeswitch
+sed -i -e '/12d1:15c1/,+5d' /etc/usb-mode.json
+# remove dw5821e usb-modeswitch
+sed -i -e '/413c:81d7/,+5d' /etc/usb-mode.json
+
+# Disable /etc/config/xmm-modem
+echo "Check xmm-modem"
+[ -d /etc/config/xmm-modem ] && {
+	uci -q set xmm-modem.@xmm-modem[0].disable='0'
+	uci commit xmm-modem
+}
+
+# setup nlbwmon database dir
+echo "Check nlbwmon"
+[ -d /etc/config/nlbwmon ] && {
+	uci -q set nlbwmon.@nlbwmon[0].database_directory='/etc/nlbwmon'
+	uci -q set nlbwmon.@nlbwmon[0].commit_interval='3h'
+	uci -q set nlbwmon.@nlbwmon[0].refresh_interval='60s'
+	uci commit nlbwmon
+}
+
+# Autofix tinyfm download index.php, index.html
+echo "Setup uhttpd"
+uci -q get uhttpd.main.ubus_prefix|grep -i '/ubus' >/dev/null || uci set uhttpd.main.ubus_prefix='/ubus'
+uci -q get uhttpd.main.index_page|grep -i 'index.php' >/dev/null || uci add_list uhttpd.main.index_page='index.php'
+uci -q get uhttpd.main.index_page|grep -i 'index.html' >/dev/null || uci add_list uhttpd.main.index_page='index.html'
+uci -q get uhttpd.main.index_page|grep -i 'cgi-bin/luci' >/dev/null || uci add_list uhttpd.main.index_page='cgi-bin/luci'
+uci -q get uhttpd.main.interpreter|grep -i '.php=/usr/bin/php-cgi' >/dev/null || uci add_list uhttpd.main.interpreter='.php=/usr/bin/php-cgi'
+uci changes uhttpd|grep . >/dev/null && uci commit uhttpd
+/etc/init.d/uhttpd restart
+
+echo "Link php & wget"
+[ -d /usr/lib/php8 ] && [ ! -d /usr/lib/php ] && ln -sf /usr/lib/php8 /usr/lib/php
+[ -x /usr/bin/wget ] && [ ! -x /usr/bin/wget-ssl ] && ln -s /usr/bin/wget /usr/bin/wget-ssl
+
+# setup edit files
+echo "Edit file with sed"
+sed -Ei "s|;Interface \"\"|Interface \"br-lan\"|; \
+         s|;DatabaseDir \"\/var\/lib\/vnstat\"|DatabaseDir \"\/etc\/vnstat\"|; \
+         s|;LargeFonts 0|LargeFonts 1|; \
+         s|;ImageScale 100|ImageScale 100|" /etc/vnstat.conf
+sed -i '/exit 0/i bash \/etc\/init.d\/hat start\n\/sbin\/sync_time 157.240.15.60' /etc/rc.local
+sed -i 's/_("OpenClash"), 50)/_("OpenClash"), 1)/' /usr/lib/lua/luci/controller/openclash.lua
+sed -i 's#return callReboot().then#return callReboot("reboot -f >/dev/null")\.then#g' /www/luci-static/resources/view/system/reboot.js
+sed -i '/mihomo /d' /etc/opkg/distfeeds.conf
+sed -i '$a\alias c="clear"\nalias hat="bash /usr/bin/hat.sh"\nalias wifihat="bash /usr/bin/wifi.sh"' /etc/profile
+
+# Check OpenClash auth
+echo "Delete authentication OpenClash"
+[ ! -z $(uci -q get openclash.config.dashboard_password) ] && uci -q del openclash.config.dashboard_password
+[ ! -z $(uci -q get openclash.@authentication[-1]) ] && uci -q del openclash.@authentication[-1]
+[ ! -z $(uci -q get network.lan.ip6assign) ] && {
+	uci -q set openclash.config.ipv6_enable='1'
+	uci -q set openclash.config.ipv6_dns='1'
+	uci -q set openclash.config.ipv6_mode='2'
+	uci -q set openclash.config.china_ip6_route='0'
+}
+uci commit openclash
+
+# Setup Vnstat
+echo "Check Interface Vnstat"
+uci -q get vnstat.@vnstat[0].interface | grep -i 'br-lan' >/dev/null || uci -q set vnstat.@vnstat[0].interface='br-lan' 
+uci commit vnstat
+[ -d /etc/vnstat ] && chmod +x /etc/vnstat/*
+vnstat --dbiflist br-lan | grep -i 'Interfaces in database: br-lan' >/dev/null || vnstat --add --force -i br-lan
+bash /www/netmon/vnstati.sh
+
+echo "Exec Command"
+chmod +x /lib/netifd/*
+chmod +x /lib/netifd/proto/*
+chmod +x /lib/netifd/wireless/*
+chmod +x /lib/wifi/*
+chmod +x /etc/init.d/repair_ro
+chmod +x /etc/init.d/vnstat_backup
+chmod +x /sbin/sync_time
+chmod +x /sbin/free.sh
+chmod +x /sbin/repair_ro
+chmod +x /usr/bin/*.sh
+chmod +x /usr/bin/clock
+chmod +x /usr/bin/cpustat
+chmod +x /usr/bin/neofetch
+chmod +x /usr/bin/repair_ro
+
+#echo "Setup HAT opiz"
+#[ -f /etc/init.d/hat ] && chmod 755 /etc/init.d/hat; cd /etc/rc.d/; ln -s ../init.d/hat K15hat; cd;
+
+#bash agh enable
+bash patchoc.sh
+
+echo "All first boot setup complete!"
+exit 0

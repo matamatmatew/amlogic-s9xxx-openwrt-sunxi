@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Set font color
+CHECK="[\033[94m INFO \033[0m]"
+NOTE="[\033[93m NOTE \033[0m]"
+SUCCESS="[\033[92m SUCCESS \033[0m]"
+ERROR="[\033[91m ERROR \033[0m]"
+
+init_var() {
+	case "${1}" in
+		enable)
+			enable_agh
+			;;
+		disable)
+			disable_agh
+			;;
+		*)
+            echo -e "${ERROR} Invalid option [ ${1} ]!"
+            exit 1
+            ;;
+	esac
+}
+
+enable_agh() {
+	echo -e "${CHECK} Setup DHCP and DNS..." 
+	uci -q get dhcp.@dnsmasq[0].noresolv | grep -i '1' >/dev/null || uci -q set dhcp.@dnsmasq[0].noresolv='1'
+	uci -q get dhcp.@dnsmasq[0].server | grep -i '127.0.0.1#1745' >/dev/null || uci -q add_list dhcp.@dnsmasq[0].server='127.0.0.1#1745'
+	echo -e "${CHECK} Setup Port Forwards..."
+	uci -q get firewall.adguardhome.enabled | grep -i '1' >/dev/null || uci -q set firewall.adguardhome.enabled='1'
+	if [[ -z $(uci -q get firewall.adguardhome >/dev/null) ]]; then
+		uci -q set firewall.adguardhome=redirect
+		uci -q set firewall.adguardhome.name='AdGuardHome'
+		uci -q set firewall.adguardhome.target='DNAT'
+		uci -q set firewall.adguardhome.proto='tcp udp'
+		uci -q set firewall.adguardhome.src='lan'
+		uci -q set firewall.adguardhome.src_dport='53'
+		uci -q set firewall.adguardhome.enabled='1'
+		uci -q set firewall.adguardhome.dest_port='1745'
+	fi
+	uci commit dhcp
+	uci commit firewall
+	#/etc/init.d/firewall restart
+	#/etc/init.d/dnsmasq restart
+	#service adguardhome status | grep -i 'running' >/dev/null || /etc/init.d/adguardhome restart
+	echo -e "${SUCCESS}"
+	echo -e "${NOTE} Ubah ( Redirect Local DNS Setting ) OpenClash ke Disable..." 
+}
+
+disable_agh() {
+	echo -e "${CHECK} Restore Setting..." 
+	uci -q get dhcp.@dnsmasq[0].noresolv | grep -q '0' >/dev/null || uci -q set dhcp.@dnsmasq[0].noresolv='0'
+	uci -q get dhcp.@dnsmasq[0].server | grep -q '127.0.0.1#1745' || uci -q del_list dhcp.@dnsmasq[-1].server && uci -q del dhcp.@dnsmasq[-1].server
+	uci -q get dhcp.@dnsmasq[0].resolvfile | grep -i '/tmp/resolv.conf.d/resolv.conf.auto' >/dev/null || uci -q set dhcp.@dnsmasq[0].resolvfile='/tmp/resolv.conf.d/resolv.conf.auto'
+	uci -q get firewall.adguardhome.enabled | grep -q '0' >/dev/null || uci -q set firewall.adguardhome.enabled='0'
+	uci commit dhcp
+	uci commit firewall
+	#/etc/init.d/firewall restart
+	#/etc/init.d/dnsmasq restart
+}
+
+init_var "${@}"

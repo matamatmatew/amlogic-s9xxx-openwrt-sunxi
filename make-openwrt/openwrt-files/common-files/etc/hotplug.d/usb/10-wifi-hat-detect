@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$ACTION" = add ]; then
+    VID=$(cat /sys$DEVPATH/idVendor)
+    if [ "$VID" = 0bda ]; then
+        logger "USB WiFi device plugged in"
+        # Config WiFi
+        /hat.sh >/dev/null 2>&1
+        /wifi.sh >/dev/null 2>&1
+    fi
+fi

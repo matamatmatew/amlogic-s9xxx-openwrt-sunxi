@@ -1,0 +1,4 @@
+#/bin/sh
+cd /root/mm-v1.22
+opkg update
+opkg install *.ipk 

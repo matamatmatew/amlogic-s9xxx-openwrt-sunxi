@@ -1,0 +1,11 @@
+verbosity=1
+bootlogo=false
+fdtfile=allwinner/sun50i-h618-orangepi-zero3.dtb
+rootdev=UUID=8c343776-7b96-42d3-b864-98db0280a6c6
+rootfstype=btrfs
+rootflags=compress=zstd:6,rw,errors=remount-ro
+overlay_prefix=sun50i-h616
+overlays=ph-i2c3
+extraargs=
+extraboardargs=net.ifnames=0 max_loop=128
+docker_optimizations=on

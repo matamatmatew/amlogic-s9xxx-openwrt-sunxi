@@ -1,0 +1,154 @@
+#!/bin/bash
+
+# Profile info
+make info
+
+# Main configuration name
+#PROFILE=""
+#PACKAGES=""
+
+#EXCLUDED+=" -dnsmasq"
+
+package+=" kmod-usb-ledtrig-usbport kmod-input-leds kmod-leds-gpio kmod-ledtrig-gpio"
+
+# LUCI APP
+PACKAGES+=" luci-app-amlogic luci-app-diskman luci-app-firewall luci-app-opkg luci-app-ttyd luci-app-tinyfm \
+luci-app-ipinfo luci-app-temp-status luci-app-cpu-status-mini luci-app-ramfree luci-app-netmon"
+
+# Luci App Services
+PACKAGES+=" luci-app-zerotier luci-app-adguardhome luci-app-nextdns luci-app-smartdns"
+
+# OLED 
+PACKAGES+=" i2c-tools kmod-i2c-core kmod-i2c-gpio luci-app-oled"
+
+# LUCI PACKAGES
+PACKAGES+=" luci luci-base luci-compat luci-lib-base luci-lib-ip luci-lib-ipkg \
+luci-lib-jsonc luci-lib-nixio luci-light luci-lua-runtime luci-mod-admin-full \
+luci-mod-network luci-mod-status luci-mod-system luci-proto-3g luci-proto-ipv6 \
+luci-proto-mbim luci-proto-ncm luci-proto-ppp luci-proto-qmi luci-ssl"
+
+# OpenWRT PACKAGES
+PACKAGES+=" ath9k-htc-firmware base-files bash bc bind-dig bzip2 ca-bundle ca-certificates cgi-io chat \
+comgt comgt-ncm coreutils coreutils-base64 coreutils-nohup coreutils-stat coreutils-timeout coreutils-truncate coreutils-sync \
+curl dbus dnsmasq-full dropbear firewall4 getrandom glib2 gzip htop httping iconv \
+jansson4 jq jshn jsonfilter kernel losetup lua microsocks minicom picocom mtd nano nextdns netifd openwrt-keyring opkg pv \
+px5g-mbedtls qmi-utils r8152-firmware screen tar terminfo tini ttyd ubox ubus ubusd uci \
+uclient-fetch uhttpd uhttpd-mod-ubus umbim unzip uqmi urandom-seed rng-tools usign uuidgen wget-ssl \
+xtables-nft xz xz-utils zram-swap zerotier zlib zoneinfo-asia zoneinfo-core tailscale adguardhome smartdns"
+
+# WIRELESS/NETWORK
+PACKAGES+=" wireless-regdb wireless-tools hostapd hostapd-common hostapd-utils wpa-cli wpa-supplicant ip-full ip6tables-nft \
+iperf3 ipset iptables-nft iw iwinfo mbim-utils odhcp6c odhcpd-ipv6only oniguruma5 openssh-client openssh-sftp-server \
+openssl-util ppp ppp-mod-pppoe procd procd-seccomp resolveip wwan"
+
+# NETWORK MONITORING
+PACKAGES+=" vnstat2 vnstati2 netdata"
+
+# MODEM
+PACKAGES+=" xmm-modem luci-proto-xmm luci-app-modemband modemmanager luci-proto-modemmanager smartmontools sms-tool luci-app-sms-tool \
+luci-app-3ginfo-lite luci-app-lite-watchdog atinout"
+
+# DISK PACKAGE
+PACKAGES+=" blkid block-mount blockd btrfs-progs dosfstools e2fsprogs exfat-fsck exfat-mkfs fdisk fstools \
+fwtool lsblk mount-utils nftables-json ntfs-3g ntfs-3g-utils parted resize2fs mkf2fs"
+
+# LUCI THEMES
+PACKAGES+=" luci-theme-alpha luci-app-alpha-config luci-app-argon-config luci-theme-argon luci-theme-bootstrap luci-theme-material"
+
+#PHP8
+PACKAGES+=" php8 php8-cgi php8-fastcgi php8-fpm php8-mod-ctype \
+php8-mod-curl php8-mod-dom php8-mod-fileinfo php8-mod-filter php8-mod-gettext php8-mod-gmp \
+php8-mod-iconv php8-mod-mbstring php8-mod-opcache php8-mod-pcntl php8-mod-pdo \
+php8-mod-session php8-mod-zip"
+
+# PERL
+PACKAGES+=" perl perl-http-date perlbase-autosplit perlbase-b \
+perlbase-base perlbase-bytes perlbase-charnames perlbase-class perlbase-config \
+perlbase-cpan perlbase-cwd perlbase-dirhandle perlbase-dynaloader perlbase-encode \
+perlbase-errno perlbase-essential perlbase-extutils perlbase-fcntl perlbase-feature \
+perlbase-file perlbase-filehandle perlbase-getopt perlbase-http-tiny perlbase-i18n \
+perlbase-integer perlbase-io perlbase-ipc perlbase-list perlbase-locale perlbase-mime \
+perlbase-net perlbase-opcode perlbase-ostype perlbase-params perlbase-posix perlbase-re \
+perlbase-safe perlbase-scalar perlbase-selectsaver perlbase-selfloader perlbase-socket \
+perlbase-symbol perlbase-sys perlbase-text perlbase-tie perlbase-time perlbase-unicode \
+perlbase-unicore perlbase-utf8 perlbase-xsloader"
+
+# PYTHON
+PACKAGES+=" python3 python3-asyncio python3-cgi python3-cgitb python3-codecs python3-ctypes python3-dbm \
+python3-decimal python3-email python3-lzma python3-multiprocessing python3-ncurses python3-openssl python3-pydoc \
+python3-readline python3-sqlite3 python3-unittest python3-urllib python3-uuid"
+# PYTHON MISS CHECKSUMS
+PACKAGES+=" python3-base python3-distutils python3-light python3-logging python3-pip python3-xml"
+
+# LIB
+PACKAGES+=" libatomic libattr libblkid libblobmsg-json libbpf libbz2 libc libcap libcap-bin libcharset \
+libcomerr libcurl4 libdbus libelf libevdev libexpat libext2fs libf2fs libfdisk libffi \
+libgcc libgcrypt libgd libgdbm libgmp libgpg-error libiconv-full libintl-full libiperf3 \
+libipset libiptext-nft libiptext libiptext6 libiwinfo-data libiwinfo-lua \
+libiwinfo libjpeg-turbo libjson-c libjson-script liblua5.3 \
+liblucihttp-lua liblucihttp-ucode liblucihttp liblzma liblzo libmbedtls libmbim \
+libminiupnpc libmnl libmount libnatpmp libncurses libnetfilter-conntrack libnettle \
+libnfnetlink libnftnl libnghttp2 libnl-tiny libopenssl-conf libparted libpcre \
+libplist libpng libpthread libpython3 libqmi libqrtr-glib libreadline librt \
+libruby libsmartcols libsqlite3 libss libstdcpp libubox libubus-lua \
+libubus libuci-lua libuci libuclient libucode libudev-zero \
+libusb-1.0 libusbmuxd libustream-mbedtls libuuid libuv libwebp \
+libwebsockets-full libxml2 libxtables libyaml libzip-openssl"
+
+# KMOD
+PACKAGES+=" kmod-ath kmod-ath9k kmod-phy-broadcom kmod-phylib-broadcom kmod-tg3 \
+kmod-ath9k-common kmod-ath9k-htc kmod-cfg80211 kmod-crypto-acompress kmod-crypto-aead \
+kmod-crypto-ccm kmod-crypto-cmac kmod-crypto-crc32c kmod-crypto-ctr kmod-crypto-gcm \
+kmod-crypto-gf128 kmod-crypto-ghash kmod-crypto-hash kmod-crypto-hmac kmod-crypto-manager \
+kmod-crypto-null kmod-crypto-rng kmod-crypto-seqiv kmod-crypto-sha256 kmod-crypto-sha512 \
+kmod-fixed-phy kmod-fs-autofs4 kmod-fs-btrfs kmod-fs-exfat kmod-fs-msdos kmod-fs-ntfs \
+kmod-fs-vfat kmod-fuse kmod-inet-diag kmod-ip6tables kmod-ipt-core kmod-ipt-ipset \
+kmod-lib-crc-ccitt kmod-lib-crc32c kmod-lib-lzo kmod-lib-raid6 kmod-lib-xor \
+kmod-lib-zlib-deflate kmod-lib-zlib-inflate kmod-lib-zstd kmod-libphy kmod-mac80211 \
+kmod-mdio-devres kmod-mii kmod-net-selftests kmod-nf-conntrack kmod-nf-conntrack-netlink \
+kmod-nf-conntrack6 kmod-nf-flow kmod-nf-ipt kmod-nf-ipt6 kmod-nf-log kmod-nf-log6 \
+kmod-nf-nat kmod-nf-reject kmod-nf-reject6 kmod-nf-socket kmod-nf-tproxy kmod-nfnetlink \
+kmod-nft-compat kmod-nft-core kmod-nft-fib kmod-nft-nat kmod-nft-offload kmod-nft-socket \
+kmod-nft-tproxy kmod-nls-base kmod-nls-cp437 kmod-nls-cp932 kmod-nls-cp936 kmod-nls-cp950 \
+kmod-nls-iso8859-1 kmod-nls-utf8 kmod-of-mdio kmod-phy-ax88796b kmod-ppp kmod-pppoe \
+kmod-pppox kmod-random-core kmod-scsi-core kmod-slhc kmod-tun kmod-ipt-nat6"
+
+# UCODE
+PACKAGES+=" ucode ucode-mod-fs ucode-mod-html ucode-mod-lua ucode-mod-math \
+ucode-mod-nl80211 ucode-mod-rtnl ucode-mod-ubus ucode-mod-uci ucode-mod-uloop"
+
+# RPCD
+PACKAGES+=" rpcd rpcd-mod-file rpcd-mod-iwinfo rpcd-mod-luci rpcd-mod-rrdns rpcd-mod-ucode"
+
+# RUBY
+PACKAGES+=" ruby ruby-bigdecimal ruby-date ruby-digest ruby-enc \
+ruby-forwardable ruby-pstore ruby-psych ruby-stringio ruby-yaml"
+
+# USB PACKAGES
+PACKAGES+=" adb usb-modeswitch usbmuxd usbutils \
+kmod-usb-serial-sierrawireless libusbmuxd-utils kmod-usb-acm kmod-usb-core \
+kmod-usb-ehci kmod-usb-net kmod-usb-net-asix kmod-usb-net-asix-ax88179 kmod-usb-net-cdc-eem \
+kmod-usb-net-cdc-ether kmod-usb-net-cdc-mbim kmod-usb-net-cdc-ncm kmod-usb-net-cdc-subset \
+kmod-usb-net-dm9601-ether kmod-usb-net-huawei-cdc-ncm kmod-usb-net-ipheth \
+kmod-usb-net-qmi-wwan kmod-usb-net-rndis kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 \
+kmod-usb-net-sierrawireless kmod-usb-ohci kmod-usb-serial kmod-usb-serial-option \
+kmod-usb-serial-qualcomm kmod-usb-serial-wwan kmod-usb-storage kmod-usb-storage-uas \
+kmod-usb-uhci kmod-usb-wdm kmod-usb-xhci-hcd kmod-usb2"
+
+# TUNNELING
+OPENCLASH+="luci-app-openclash coreutils coreutils-nohup bash curl ca-certificates ipset ip-full libcap libcap-bin ruby ruby-yaml \
+kmod-tun unzip kmod-inet-diag luci-compat kmod-nft-tproxy kmod-ipt-nat iptables-mod-tproxy iptables-mod-extra"
+
+PASSWALL+="coreutils coreutils-base64 coreutils-nohup curl chinadns-ng dns2socks dns2tcp ip-full libuci-lua lua \
+luci-compat luci-lib-jsonc microsocks resolveip tcping unzip ipt2socks kmod-nft-socket kmod-nft-tproxy kmod-nft-nat"
+
+PASSWALLPACKAGES+="luci-app-passwall hysteria shadowsocksr-libev-ssr-local shadowsocksr-libev-ssr-redir shadowsocksr-libev-ssr-server \
+shadowsocks-rust-sslocal shadowsocks-rust-ssserver simple-obfs sing-box trojan-go trojan-plus v2ray-geoip v2ray-geosite v2ray-plugin \
+xray-core xray-plugin"
+
+MIHOMO+="mihomo luci-app-mihomo"
+
+PACKAGES+=" $OPENCLASH $MIHOMO"
+
+# EXECUTE PACKAGES
+make image PROFILE="$1" PACKAGES="$PACKAGES -dnsmasq -procd-ujail" ROOTFS_PARTSIZE="768"

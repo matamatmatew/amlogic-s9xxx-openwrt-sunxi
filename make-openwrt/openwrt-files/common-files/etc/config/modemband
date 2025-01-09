@@ -1,0 +1,9 @@
+
+config modemband
+	option iface 'wan'
+	option wanrestart '0'
+	option modemrestart '0'
+	option notify '0'
+	option set_port '/dev/ttyACM2'
+	option set_bands '1,3,8,40'
+

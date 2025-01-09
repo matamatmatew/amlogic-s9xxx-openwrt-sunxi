@@ -1,0 +1,6 @@
+
+config adguardhome 'config'
+	option workdir '/etc/AdGuardHome'
+	option web_username 'root'
+	option web_password 'root'
+

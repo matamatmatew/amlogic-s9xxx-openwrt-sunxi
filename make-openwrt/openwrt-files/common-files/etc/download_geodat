@@ -1,0 +1,8 @@
+#!/bin/sh
+wget https://github.com/malikshi/geoip/raw/refs/heads/release/Country.mmdb -O $PWD/Country.mmdb
+wget https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geoip.dat -O $PWD/GeoIP.dat
+wget https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geosite.dat -O $PWD/GeoSite.dat
+
+cp $PWD/*.mmdb $PWD/*.dat $PWD/openclash/
+cp $PWD/*.mmdb $PWD/*.dat $PWD/mihomo/run/
+rm $PWD/*.mmdb $PWD/*.dat

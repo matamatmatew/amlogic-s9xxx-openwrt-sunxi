@@ -1,0 +1,12 @@
+
+config watchdog
+	option iface 'wan'
+	option restartcmd 'at+cfun=1,1'
+	option dest '157.240.15.60'
+	option delay '60'
+	option period '1'
+	option period_count '2'
+	option enabled '0'
+	option action 'wan'
+	option log 'all'
+

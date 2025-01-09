@@ -1,0 +1,3 @@
+#!/bin/sh
+url="$1"
+/sbin/sync_time.sh "$url"
