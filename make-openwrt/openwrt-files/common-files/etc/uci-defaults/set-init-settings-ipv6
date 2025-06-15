@@ -33,14 +33,14 @@ uci commit luci
 chmod +x /usr/lib/ModemManager/connection.d/*
 echo "Setup WAN and LAN Interface"
 uci -q set network.lan.ipaddr="192.168.1.1"
-uci -q set network.lan.ip6assign='64'
+uci -q del network.lan.ip6assign
 uci -q set network.wan=interface 
 uci -q set network.wan.proto='xmm'
 uci -q set network.wan.device='/dev/ttyACM2'
 uci -q set network.wan.apn='Home'
 uci -q set network.wan.auth='none'
 uci -q set network.wan.pdp='ipv4v6'
-uci -q set network.wan.ip6assign='64'
+uci -q del network.wan.ip6assign
 uci -q del network.wan6
 uci -q set network.wwan=interface 
 uci -q set network.wwan.proto='modemmanager'
@@ -50,7 +50,7 @@ uci -q set network.wwan.auth='both'
 uci -q set network.wwan.iptype='ipv4v6'
 uci -q set network.wwan.loglevel='ERR'
 uci -q set network.wwan.signalrate='5'
-uci -q set network.wwan.ip6assign='64'
+uci -q del network.wwan.ip6assign
 uci -q del network.wwan6
 uci -q set network.tethering=interface
 uci -q set network.tethering.proto='dhcp'
@@ -206,11 +206,11 @@ sed -Ei "s|;Interface \"\"|Interface \"br-lan\"|; \
          s|;DatabaseDir \"\/var\/lib\/vnstat\"|DatabaseDir \"\/etc\/vnstat\"|; \
          s|;LargeFonts 0|LargeFonts 1|; \
          s|;ImageScale 100|ImageScale 100|" /etc/vnstat.conf
-sed -i '/exit 0/i bash \/etc\/init.d\/hat start\n\/sbin\/sync_time 157.240.15.60' /etc/rc.local
+sed -i '/exit 0/i bash \/etc\/init.d\/hat start\n\/sbin\/sync_time google.com' /etc/rc.local
 sed -i 's/_("OpenClash"), 50)/_("OpenClash"), 1)/' /usr/lib/lua/luci/controller/openclash.lua
 sed -i 's#return callReboot().then#return callReboot("reboot -f >/dev/null")\.then#g' /www/luci-static/resources/view/system/reboot.js
 sed -i '/mihomo /d' /etc/opkg/distfeeds.conf
-sed -i '$a\alias c="clear"\nalias hat="bash /usr/bin/hat.sh"\nalias wifihat="bash /usr/bin/wifi.sh"' /etc/profile
+sed -i '$a\alias c="clear"\nalias hat="bash /usr/bin/hat.sh"\nalias fixwifi="bash /usr/bin/wifi.sh"' /etc/profile
 
 # Check OpenClash auth
 echo "Delete authentication OpenClash"
@@ -252,7 +252,25 @@ chmod +x /usr/bin/repair_ro
 #[ -f /etc/init.d/hat ] && chmod 755 /etc/init.d/hat; cd /etc/rc.d/; ln -s ../init.d/hat K15hat; cd;
 
 #bash agh enable
-bash patchoc.sh
+bash /usr/bin/patchoc.sh >/dev/null 2>&1
+bash /usr/bin/patchnikki.sh >/dev/null 2>&1
+
+echo 'Edit List Mod Menu'
+[ -f /usr/share/luci/menu.d/luci-mod-network.json ] && {
+	mv /usr/share/luci/menu.d/luci-mod-network.json /usr/share/luci/menu.d/luci-mod-network.json.bak
+	cp /root/luci-mod-network.json /usr/share/luci/menu.d/luci-mod-network.json
+	rm /root/luci-mod-network.json
+}
+[ -f /usr/share/luci/menu.d/luci-mod-status.json ] && {
+	mv /usr/share/luci/menu.d/luci-mod-status.json /usr/share/luci/menu.d/luci-mod-status.json.bak
+	cp /root/luci-mod-status.json /usr/share/luci/menu.d/luci-mod-status.json
+	rm /root/luci-mod-status.json
+}
+[ -f /usr/share/luci/menu.d/luci-mod-system.json ] && {
+	mv /usr/share/luci/menu.d/luci-mod-system.json /usr/share/luci/menu.d/luci-mod-system.json.bak
+	cp /root/luci-mod-system.json /usr/share/luci/menu.d/luci-mod-system.json
+	rm /root/luci-mod-status.json
+}
 
 echo "All first boot setup complete!"
 exit 0

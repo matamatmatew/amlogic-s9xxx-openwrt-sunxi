@@ -1,0 +1,17 @@
+proxies:
+  - name: name
+    server: server
+    port: 443
+    type: vmess
+    uuid: uuid
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: servername
+    network: ws
+    ws-opts:
+      path: vmess
+      headers:
+        Host: Host
+    udp: true

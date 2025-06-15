@@ -31,7 +31,7 @@ for i in {2..5}; do
 done
 
 # Daftar vid module yang ingin diperiksa
-vids=("2cb7" "1199" "8087" "413c" "1bc7" "03f0")
+vids=("1d6b" "0bda" "2cb7" "1199" "8087" "413c" "1bc7" "03f0")
 
 # Loop vid module
 for vid in "${vids[@]}"; do

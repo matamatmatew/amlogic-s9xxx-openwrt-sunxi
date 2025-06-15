@@ -1,0 +1,208 @@
+redir-port: 7891
+tproxy-port: 7892
+port: 8080
+socks-port: 1080
+mixed-port: 7890
+mode: rule
+log-level: silent
+allow-lan: true
+ipv6: true
+external-ui: "/usr/share/openclash/ui"
+external-ui-name: zashboard
+external-ui-url: https://ghp.ci/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip
+external-controller: 0.0.0.0:9090
+secret: ''
+tcp-concurrent: true
+unified-delay: true
+geodata-mode: true
+geodata-loader: memconservative
+geo-auto-update: true
+geo-update-interval: 24
+geox-url:
+  mmdb: https://github.com/malikshi/geoip/raw/refs/heads/release/Country.mmdb
+  geoip: https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geoip.dat
+  geosite: https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geosite.dat
+  asn: https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb
+global-client-fingerprint: chrome
+keep-alive-interval: 15
+keep-alive-idle: 600
+disable-keep-alive: true
+find-process-mode: 'off'
+hosts:
+  localhost:
+    - 127.0.0.1
+    - ::1
+dns:
+  enable: true
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  listen: 0.0.0.0:1053
+  respect-rules: true
+  prefer-h3: true
+  use-system-hosts: true
+  use-hosts: true
+  proxy-server-nameserver:
+    - 1.1.1.1
+    - 1.0.0.1
+    - tls://one.one.one.one
+    - https://dns.cloudflare.com/dns-query#h3=true
+    - 2606:4700:4700::1001
+    - 2606:4700:4700::1111
+  default-nameserver:
+    - 1.1.1.1
+    - 1.0.0.1
+    - 2606:4700:4700::1001
+    - 2606:4700:4700::1111
+  nameserver:
+    - https://dns.cloudflare.com/dns-query#h3=true
+    - tls://one.one.one.one
+    - 1.1.1.1
+    - 2606:4700:4700::1111
+  fallback:
+    - tls://one.one.one.one
+    - https://dns.cloudflare.com/dns-query#h3=true
+    - 1.0.0.1
+    - 2606:4700:4700::1001
+sniffer:
+  enable: true
+  parse-pure-ip: true
+  force-dns-mapping: true
+  sniff:
+    HTTP:
+      ports:
+        - 80
+        - 8080-8880
+      override-destination: true
+    TLS:
+      ports:
+        - 443
+        - 8443
+tun:
+  enable: false
+  stack: system
+  device: mihomo
+  dns-hijack:
+    - any:53
+  gso: true
+  gso-max-size: 65536
+  auto-route: false
+  auto-detect-interface: false
+  auto-redirect: false
+  strict-route: false
+  mtu: 9000
+  endpoint-independent-nat: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+proxy-groups:
+  - name: ALL-GROUP
+    type: select
+    disable-udp: false
+    proxies:
+      - Traffic-Browsing
+      - Traffic-Porn
+      - Traffic-Ads
+      - Traffic-Gaming
+      - FB
+      - LB
+      - BP
+      - DIRECT
+    use:
+      - Akun
+  - name: Traffic-Browsing
+    type: select
+    disable-udp: false
+    proxies:
+      - FB
+      - LB
+      - BP
+    use:
+      - Akun
+  - name: Traffic-Gaming
+    type: select
+    disable-udp: false
+    proxies:
+      - FB
+      - LB
+      - BP
+    use:
+      - Akun
+  - name: Traffic-Porn
+    type: select
+    disable-udp: false
+    proxies:
+      - Traffic-Browsing
+      - DIRECT
+      - REJECT
+  - name: Traffic-Ads
+    type: select
+    disable-udp: false
+    proxies:
+      - REJECT
+      - DIRECT
+      - Traffic-Browsing
+  - name: FB
+    type: fallback
+    disable-udp: false
+    use:
+      - Akun
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+  - name: LB
+    type: load-balance
+    disable-udp: false
+    strategy: round-robin
+    use:
+      - Akun
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+  - name: BP
+    type: url-test
+    disable-udp: false
+    lazy: false
+    use:
+      - Akun
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+    tolerance: 150
+proxy-providers:
+  Akun:
+    type: file
+    path: "./proxy_provider/Akun.yaml"
+    health-check:
+      enable: true
+      url: https://captive.apple.com/generate_204
+      interval: 180
+rule-providers:
+  oisd_big:
+    type: http
+    behavior: classical
+    path: "./rule_provider/oisd_big.yaml"
+    url: https://raw.githubusercontent.com/hillz2/openclash_adblock/main/oisd_big.yaml
+    interval: 14400
+  Crypto:
+    type: file
+    behavior: classical
+    path: "./rule_provider/Crypto.yaml"
+rules:
+  - MATCH,ALL-GROUP
+  - GEOSITE,oisd-nsfw,Traffic-Porn
+  - GEOSITE,oisd-full,Traffic-Ads
+  - RULE-SET,oisd_big,Traffic-Ads
+  - GEOSITE,rule-malicious,Traffic-Ads
+  - NOT,((DOMAIN-SUFFIX,googlesyndication.com)),Traffic-Ads
+  - GEOIP,GOOGLE,ALL-GROUP
+  - GEOSITE,GOOGLE,ALL-GROUP
+  - AND,((NETWORK,TCP),(DST-PORT,5228-5230),(OR,(DOMAIN-KEYWORD,google))),ALL-GROUP
+  - AND,((NETWORK,UDP),(DST-PORT,5228-5230),(OR,(DOMAIN-KEYWORD,google))),ALL-GROUP
+  - AND,((NETWORK,udp),(OR,(DST-PORT,443),(GEOSITE,youtube))),REJECT
+  - GEOSITE,rule-doh,Traffic-Browsing
+  - GEOSITE,rule-gaming,Traffic-Browsing
+  - GEOSITE,rule-indo,Traffic-Browsing
+  - GEOSITE,rule-sosmed,Traffic-Browsing
+  - GEOSITE,rule-streaming,Traffic-Browsing
+  - GEOSITE,rule-speedtest,Traffic-Browsing
+  - GEOSITE,videoconference,Traffic-Browsing
+  - GEOSITE,urltest,Traffic-Browsing
+  - GEOIP,id,ALL-GROUP

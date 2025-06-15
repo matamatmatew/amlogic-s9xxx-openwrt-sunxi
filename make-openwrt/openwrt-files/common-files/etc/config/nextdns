@@ -1,9 +1,0 @@
-
-config nextdns 'main'
-	option enabled '0'
-	option config 'abcdef'
-	option setup_router '1'
-	option report_client_info '0'
-	option hardened_privacy '0'
-	option log_queries '0'
-

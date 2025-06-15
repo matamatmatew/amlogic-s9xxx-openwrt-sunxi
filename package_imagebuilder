@@ -7,34 +7,34 @@ make info
 #PROFILE=""
 #PACKAGES=""
 
-#EXCLUDED+=" -dnsmasq"
+#EXCLUDED+=" -dnsmasq -procd-ujail"
 
-package+=" kmod-usb-ledtrig-usbport kmod-input-leds kmod-leds-gpio kmod-ledtrig-gpio"
+PACKAGES+=" kmod-usb-ledtrig-usbport kmod-input-leds kmod-leds-gpio kmod-ledtrig-gpio"
 
 # LUCI APP
-PACKAGES+=" luci-app-amlogic luci-app-diskman luci-app-firewall luci-app-opkg luci-app-ttyd luci-app-tinyfm \
+PACKAGES+=" luci-app-ttyd luci-app-tinyfm luci-app-adguardhome \
 luci-app-ipinfo luci-app-temp-status luci-app-cpu-status-mini luci-app-ramfree luci-app-netmon"
 
 # Luci App Services
-PACKAGES+=" luci-app-zerotier luci-app-adguardhome luci-app-nextdns luci-app-smartdns"
+#PACKAGES+=" luci-app-zerotier zerotier luci-app-nextdns nextdns luci-app-smartdns"
 
 # OLED 
-PACKAGES+=" i2c-tools kmod-i2c-core kmod-i2c-gpio luci-app-oled"
+#PACKAGES+=" i2c-tools kmod-i2c-core kmod-i2c-gpio luci-app-oled"
 
 # LUCI PACKAGES
 PACKAGES+=" luci luci-base luci-compat luci-lib-base luci-lib-ip luci-lib-ipkg \
 luci-lib-jsonc luci-lib-nixio luci-light luci-lua-runtime luci-mod-admin-full \
 luci-mod-network luci-mod-status luci-mod-system luci-proto-3g luci-proto-ipv6 \
-luci-proto-mbim luci-proto-ncm luci-proto-ppp luci-proto-qmi luci-ssl"
-
+luci-proto-mbim luci-proto-ncm luci-proto-ppp luci-proto-qmi"
+#luci-ssl
 # OpenWRT PACKAGES
 PACKAGES+=" ath9k-htc-firmware base-files bash bc bind-dig bzip2 ca-bundle ca-certificates cgi-io chat \
 comgt comgt-ncm coreutils coreutils-base64 coreutils-nohup coreutils-stat coreutils-timeout coreutils-truncate coreutils-sync \
 curl dbus dnsmasq-full dropbear firewall4 getrandom glib2 gzip htop httping iconv \
-jansson4 jq jshn jsonfilter kernel losetup lua microsocks minicom picocom mtd nano nextdns netifd openwrt-keyring opkg pv \
-px5g-mbedtls qmi-utils r8152-firmware screen tar terminfo tini ttyd ubox ubus ubusd uci \
+jansson4 jq jshn jsonfilter kernel losetup lua microsocks minicom picocom mtd nano netifd openwrt-keyring opkg pv \
+qmi-utils r8152-firmware screen tar terminfo tini ttyd ubox ubus ubusd uci \
 uclient-fetch uhttpd uhttpd-mod-ubus umbim unzip uqmi urandom-seed rng-tools usign uuidgen wget-ssl \
-xtables-nft xz xz-utils zram-swap zerotier zlib zoneinfo-asia zoneinfo-core tailscale adguardhome smartdns"
+xtables-nft xz xz-utils zram-swap zlib zoneinfo-asia zoneinfo-core adguardhome"
 
 # WIRELESS/NETWORK
 PACKAGES+=" wireless-regdb wireless-tools hostapd hostapd-common hostapd-utils wpa-cli wpa-supplicant ip-full ip6tables-nft \
@@ -45,15 +45,16 @@ openssl-util ppp ppp-mod-pppoe procd procd-seccomp resolveip wwan"
 PACKAGES+=" vnstat2 vnstati2 netdata"
 
 # MODEM
-PACKAGES+=" xmm-modem luci-proto-xmm luci-app-modemband modemmanager luci-proto-modemmanager smartmontools sms-tool luci-app-sms-tool \
+PACKAGES+=" xmm-modem luci-proto-xmm luci-app-modemband modemmanager modemmanager-rpcd luci-proto-modemmanager smartmontools sms-tool luci-app-sms-tool \
 luci-app-3ginfo-lite luci-app-lite-watchdog atinout"
 
 # DISK PACKAGE
 PACKAGES+=" blkid block-mount blockd btrfs-progs dosfstools e2fsprogs exfat-fsck exfat-mkfs fdisk fstools \
-fwtool lsblk mount-utils nftables-json ntfs-3g ntfs-3g-utils parted resize2fs mkf2fs"
-
+fwtool lsblk mount-utils nftables-json parted resize2fs mkf2fs"
+#ntfs-3g ntfs-3g-utils 
 # LUCI THEMES
-PACKAGES+=" luci-theme-alpha luci-app-alpha-config luci-app-argon-config luci-theme-argon luci-theme-bootstrap luci-theme-material"
+PACKAGES+=" luci-app-argon-config luci-theme-argon"
+#luci-theme-alpha luci-app-alpha-config luci-theme-peditx luci-theme-bootstrap luci-theme-material
 
 #PHP8
 PACKAGES+=" php8 php8-cgi php8-fastcgi php8-fpm php8-mod-ctype \
@@ -86,15 +87,16 @@ libcomerr libcurl4 libdbus libelf libevdev libexpat libext2fs libf2fs libfdisk l
 libgcc libgcrypt libgd libgdbm libgmp libgpg-error libiconv-full libintl-full libiperf3 \
 libipset libiptext-nft libiptext libiptext6 libiwinfo-data libiwinfo-lua \
 libiwinfo libjpeg-turbo libjson-c libjson-script liblua5.3 \
-liblucihttp-lua liblucihttp-ucode liblucihttp liblzma liblzo libmbedtls libmbim \
+liblucihttp-lua liblucihttp-ucode liblucihttp liblzma liblzo libmbim \
 libminiupnpc libmnl libmount libnatpmp libncurses libnetfilter-conntrack libnettle \
-libnfnetlink libnftnl libnghttp2 libnl-tiny libopenssl-conf libparted libpcre \
+libnfnetlink libnftnl libnghttp2 libnl-tiny libopenssl-conf libparted \
 libplist libpng libpthread libpython3 libqmi libqrtr-glib libreadline librt \
 libruby libsmartcols libsqlite3 libss libstdcpp libubox libubus-lua \
 libubus libuci-lua libuci libuclient libucode libudev-zero \
-libusb-1.0 libusbmuxd libustream-mbedtls libuuid libuv libwebp \
-libwebsockets-full libxml2 libxtables libyaml libzip-openssl"
-
+libusb-1.0 libusbmuxd libuuid libuv libwebp \
+libwebsockets-full libxml2 libxtables libyaml libzip-openssl libustream-openssl"
+# Conflict 
+#libmbedtls libustream-mbedtls px5g-mbedtls 
 # KMOD
 PACKAGES+=" kmod-ath kmod-ath9k kmod-phy-broadcom kmod-phylib-broadcom kmod-tg3 \
 kmod-ath9k-common kmod-ath9k-htc kmod-cfg80211 kmod-crypto-acompress kmod-crypto-aead \
@@ -146,9 +148,9 @@ PASSWALLPACKAGES+="luci-app-passwall hysteria shadowsocksr-libev-ssr-local shado
 shadowsocks-rust-sslocal shadowsocks-rust-ssserver simple-obfs sing-box trojan-go trojan-plus v2ray-geoip v2ray-geosite v2ray-plugin \
 xray-core xray-plugin"
 
-MIHOMO+="mihomo luci-app-mihomo"
+NIKKI+="nikki luci-app-nikki"
 
-PACKAGES+=" $OPENCLASH $MIHOMO"
+PACKAGES+=" $OPENCLASH $NIKKI"
 
 # EXECUTE PACKAGES
-make image PROFILE="$1" PACKAGES="$PACKAGES -dnsmasq -procd-ujail" ROOTFS_PARTSIZE="768"
+make image PROFILE="$1" PACKAGES="$PACKAGES -dnsmasq -procd-ujail -libustream-mbedtls" ROOTFS_PARTSIZE="768"

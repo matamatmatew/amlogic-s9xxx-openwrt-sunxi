@@ -1,9 +1,9 @@
 ---
-redir-port: 7891
-tproxy-port: 7892
-port: 8080
-socks-port: 1080
-mixed-port: 7890
+redir-port: 7892
+tproxy-port: 7895
+port: 7890
+socks-port: 7891
+mixed-port: 7893
 mode: rule
 log-level: silent
 allow-lan: true
@@ -22,15 +22,12 @@ geox-url:
   mmdb: https://github.com/malikshi/geoip/raw/refs/heads/release/Country.mmdb
   geoip: https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geoip.dat
   geosite: https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geosite.dat
+  asn: https://github.com/malikshi/geoip/raw/refs/heads/release/GeoLite2-ASN.mmdb
 global-client-fingerprint: chrome
 keep-alive-interval: 15
 keep-alive-idle: 600
-disable-keep-alive: true
-find-process-mode: 'off'
-hosts:
-  localhost:
-  - 127.0.0.1
-  - ::1
+disable-keep-alive: false
+find-process-mode: strict
 dns:
   enable: true
   ipv6: true
@@ -42,31 +39,27 @@ dns:
   use-system-hosts: true
   use-hosts: true
   nameserver:
-  - https://dns.cloudflare.com/dns-query#ALL-GROUP&h3=true
-  - tls://one.one.one.one#ALL-GROUP
-  - 1.1.1.1#ALL-GROUP
-  - "[2606:4700:4700::1111]#ALL-GROUP"
+  - 1.1.1.1
+  - "[2606:4700:4700::1111]"
+  - https://dns.cloudflare.com/dns-query#h3=true
+  - tls://one.one.one.one
   fallback:
-  - https://dns.cloudflare.com/dns-query#ALL-GROUP&h3=true
-  - tls://one.one.one.one#ALL-GROUP
-  - 1.0.0.1#ALL-GROUP
-  - "[2606:4700:4700::1001]#ALL-GROUP"
+  - tls://one.one.one.one
+  - https://dns.cloudflare.com/dns-query#h3=true
+  - 1.1.1.1
+  - "[2606:4700:4700::1111]"
   default-nameserver:
   - 1.1.1.1
-  - 1.0.0.1
   - "[2606:4700:4700::1111]"
+  - 1.0.0.1
   - "[2606:4700:4700::1001]"
   proxy-server-nameserver:
-  - https://dns.cloudflare.com/dns-query#ALL-GROUP&h3=true
-  - tls://one.one.one.one#ALL-GROUP
-  - 1.0.0.1#ALL-GROUP
-  - 1.1.1.1#ALL-GROUP
-  - "[2606:4700:4700::1111]#ALL-GROUP"
-  - "[2606:4700:4700::1001]#ALL-GROUP"
   - 1.1.1.1
+  - "[2606:4700:4700::1111]"
+  - https://dns.cloudflare.com/dns-query#h3=true
+  - tls://one.one.one.one
   - 1.0.0.1
   - "[2606:4700:4700::1001]"
-  - "[2606:4700:4700::1111]"
 sniffer:
   enable: true
   parse-pure-ip: true
@@ -82,27 +75,13 @@ sniffer:
       - 80
       - 8080-8880
       override-destination: true
-  force-domain:
-  - "+"
-  - "+.netflix.com"
-  - "+.nflxvideo.net"
-  - "+.amazonaws.com"
-  - "+.media.dssott.com"
-  skip-domain:
-  - "+.apple.com"
-  - Mijia Cloud
-  - dlg.io.mi.com
-  - "+.oray.com"
-  - "+.sunlogin.net"
-  - "+.push.apple.com"
 tun:
   enable: true
-  stack: gvisor
+  stack: system
   device: utun
   dns-hijack:
   - tcp://any:53
-  gso: true
-  gso-max-size: 65536
+  endpoint-independent-nat: true
   auto-route: false
   auto-detect-interface: false
   auto-redirect: false
@@ -114,33 +93,35 @@ proxy-groups:
 - name: ALL-GROUP
   type: select
   disable-udp: false
+  url: https://cp.cloudflare.com/generate_204
+  interval: 30
   proxies:
   - Traffic-Browsing
   - Traffic-Porn
   - Traffic-Ads
   - Traffic-Gaming
-  - BEST-PING
-  - FALLBACK
+  - FB
   - LB
+  - BP
   - DIRECT
   use:
   - Akun
-  url: https://captive.apple.com/generate_204
-  interval: 60
 - name: Traffic-Browsing
   type: select
   disable-udp: false
   proxies:
-  - FALLBACK
+  - FB
   - LB
+  - BP
   use:
   - Akun
 - name: Traffic-Gaming
   type: select
   disable-udp: false
   proxies:
-  - FALLBACK
+  - FB
   - LB
+  - BP
   use:
   - Akun
 - name: Traffic-Porn
@@ -148,43 +129,46 @@ proxy-groups:
   disable-udp: false
   proxies:
   - Traffic-Browsing
+  - DIRECT
   - REJECT
 - name: Traffic-Ads
   type: select
   disable-udp: false
   proxies:
   - REJECT
+  - DIRECT
   - Traffic-Browsing
+- name: FB
+  type: fallback
+  disable-udp: false
+  use:
+  - Akun
+  url: https://cp.cloudflare.com/generate_204
+  interval: 60
 - name: LB
   type: load-balance
   disable-udp: false
-  strategy: consistent-hashing
+  strategy: round-robin
   use:
   - Akun
-  url: https://captive.apple.com/generate_204
-  interval: 180
-- name: BEST-PING
+  url: https://cp.cloudflare.com/generate_204
+  interval: 60
+- name: BP
   type: url-test
   disable-udp: false
   lazy: false
   use:
   - Akun
-  url: https://captive.apple.com/generate_204
-  interval: 180
-- name: FALLBACK
-  type: fallback
-  disable-udp: false
-  use:
-  - Akun
-  url: https://captive.apple.com/generate_204
-  interval: 180
+  url: https://cp.cloudflare.com/generate_204
+  interval: 60
+  tolerance: 150
 proxy-providers:
   Akun:
     type: file
     path: "./proxy_provider/Akun.yaml"
     health-check:
       enable: true
-      url: https://www.gstatic.com/generate_204
+      url: https://captive.apple.com/generate_204
       interval: 180
 rule-providers:
   oisd_big:
@@ -194,28 +178,21 @@ rule-providers:
     url: https://raw.githubusercontent.com/hillz2/openclash_adblock/main/oisd_big.yaml
     interval: 14400
 rules:
+- IP-CIDR,198.18.0.1/16,REJECT,no-resolve
 - MATCH,ALL-GROUP
-- AND,((NETWORK,udp),(OR,(DST-PORT,443),(GEOSITE,youtube))),REJECT
-- GEOSITE,rule-malicious,REJECT,no-resolve
-- RULE-SET,oisd_big,Traffic-Ads,no-resolve
-- GEOSITE,oisd-full,Traffic-Ads
-- GEOSITE,d3ward,Traffic-Ads
-- GEOSITE,rule-ads,Traffic-Ads
-- NOT,((DOMAIN-SUFFIX,googlesyndication.com)),Traffic-Ads
 - GEOSITE,oisd-nsfw,Traffic-Porn
-- GEOIP,GOOGLE,Traffic-Browsing
-- GEOSITE,GOOGLE,Traffic-Browsing
-- AND,((NETWORK,TCP),(DST-PORT,5228-5230),(OR,(DOMAIN-KEYWORD,google))),Traffic-Browsing
-- AND,((NETWORK,UDP),(DST-PORT,5228-5230),(OR,(DOMAIN-KEYWORD,google))),Traffic-Browsing
-- GEOSITE,rule-gaming,Traffic-Gaming
-- GEOSITE,rule-indo,Traffic-Browsing
-- GEOSITE,rule-sosmed,Traffic-Browsing
-- GEOSITE,rule-streaming,Traffic-Browsing
-- GEOSITE,rule-speedtest,Traffic-Browsing
-- GEOSITE,videoconference,Traffic-Browsing
-- GEOIP,id,Traffic-Browsing
-- GEOIP,facebook,Traffic-Browsing
-- GEOIP,telegram,Traffic-Browsing
-- GEOIP,cloudflare,DIRECT
-- GEOIP,cloudfront,DIRECT
-
+- GEOSITE,oisd-full,Traffic-Ads
+- RULE-SET,oisd_big,Traffic-Ads
+- NOT,((DOMAIN-SUFFIX,googlesyndication.com)),Traffic-Ads
+- AND,((NETWORK,udp),(OR,(DST-PORT,443),(GEOSITE,youtube))),REJECT
+- GEOIP,GOOGLE,ALL-GROUP
+- GEOSITE,GOOGLE,ALL-GROUP
+- AND,((NETWORK,TCP),(DST-PORT,5228-5230),(OR,(DOMAIN-KEYWORD,google))),ALL-GROUP
+- AND,((NETWORK,UDP),(DST-PORT,5228-5230),(OR,(DOMAIN-KEYWORD,google))),ALL-GROUP
+- GEOSITE,rule-gaming,ALL-GROUP
+- GEOSITE,rule-indo,ALL-GROUP
+- GEOSITE,rule-sosmed,ALL-GROUP
+- GEOSITE,rule-streaming,ALL-GROUP
+- GEOSITE,rule-speedtest,ALL-GROUP
+- GEOSITE,videoconference,ALL-GROUP
+- GEOIP,id,ALL-GROUP

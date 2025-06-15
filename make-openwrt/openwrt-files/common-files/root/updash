@@ -1,0 +1,4 @@
+!#/bin/sh
+cd /usr/share/openclash/ui/
+wget https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip
+unzip *.zip

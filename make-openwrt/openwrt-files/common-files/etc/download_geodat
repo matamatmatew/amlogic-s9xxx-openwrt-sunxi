@@ -4,5 +4,5 @@ wget https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geoip.da
 wget https://github.com/malikshi/v2ray-rules-dat/raw/refs/heads/release/geosite.dat -O $PWD/GeoSite.dat
 
 cp $PWD/*.mmdb $PWD/*.dat $PWD/openclash/
-cp $PWD/*.mmdb $PWD/*.dat $PWD/mihomo/run/
+cp $PWD/*.mmdb $PWD/*.dat $PWD/nikki/run/
 rm $PWD/*.mmdb $PWD/*.dat
